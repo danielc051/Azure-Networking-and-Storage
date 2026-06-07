@@ -1,233 +1,176 @@
+# 🌐 Azure Networking and Storage
 
-
-
-# 🌐 Azure Networking and Storage Project
-
----
-
-## 📘 Scenario
-
-A company wants to deploy a secure storage account, ensure network isolation for its resources, enforce data encryption, and use templates to automate the deployment of resources.
+**Topics Covered:** Virtual Networks (VNets), Network Security Groups (NSGs), Storage Accounts, Encryption, Private Endpoints, Shared Access Signatures (SAS), ARM Templates
 
 ---
 
-<img src="azurenetworkingandstorage.png" alt="Azure Architecture Diagram">
-
-# 🛠️ Steps
+<p align="center">
+  <img src="azurenetworkingandstorage.png" alt="Azure Networking and Storage">
+</p>
 
 ---
 
-## 1️⃣ 🌐 Create a Virtual Network (VNet)
+## 📖 Summary
 
-- Go to:
-  - **Azure Portal** > **Virtual Networks** > **Create**
+This project focuses on building a secure Azure networking and storage environment. It demonstrates how to create Virtual Networks and subnets, secure traffic using Network Security Groups (NSGs), deploy encrypted Storage Accounts with Private Endpoints, and automate deployments using Azure Resource Manager (ARM) templates.
 
-- Add two subnets:
-  - **Web**
+---
+
+## 🏢 Scenario
+
+A company wants to deploy a secure storage solution, isolate network resources using Virtual Networks and Network Security Groups, enforce encryption for data protection, and automate infrastructure deployment using ARM templates.
+
+---
+
+## 🛠️ Steps
+
+### 1️⃣ 🌐 Create a Virtual Network (VNet)
+
+- Navigate to **Azure Portal** → **Virtual Networks** → **Create**.
+- Configure a new Virtual Network.
+- Create two subnets:
   - **Database**
-
-### 🗄️ Database Subnet
-
-- `+ Subnet`
-- Configure:
-  - Name: `Database`
-  - IPv4: `10.0.0.0`
-  - Size: `/27`
-  - Enable:
-    - ✅ Private subnet
-    - ✅ Service Endpoints for `Microsoft.Storage`
-
-### 🌍 Web Subnet
-
-- `+ Add a Subnet`
-- Configure:
-  - Name: `Web`
-  - IPv4: `10.0.1.0`
-  - Size: `/27`
-
-- Review and create.
-
-### 🔗 VNet Communication
-
-- Azure automatically enables:
-  - **Intra-VNet communication**
-- Subnets in the same VNet can communicate directly by default.
+    - Address Range: `10.0.0.0/27`
+    - Enable **Private Subnet**
+    - Enable **Service Endpoints** for **Microsoft.Storage**
+  - **Web**
+    - Address Range: `10.0.1.0/27`
+- Review and create the VNet.
+- Verify that Azure automatically enables communication between subnets within the same VNet.
 
 ---
 
-## 2️⃣ 🔒 Deploy a Network Security Group (NSG)
+### 2️⃣ 🔒 Deploy a Network Security Group (NSG)
 
-- Navigate to:
-  - **Network Security Groups** > **Create**
-
-- Associate the NSG with the:
-  - **Web subnet**
-
-### 🔗 Associate NSG
-
-- Go to:
-  - Resource > Subnets > Associate > `Web`
-
-### 📥 Add Inbound Rules
-
-#### ✅ Allow HTTPS (443)
-
-- Go to:
-  - Inbound security rules > Add
-- Configure:
-  - Destination port: `443`
-  - Service: `HTTPS`
-- Add rule.
-
-#### ❌ Block All Other Internet Traffic
-
-- Add another rule:
-  - Destination port: `*`
-
-### 💡 Notes
-
-- If SSH/RDP is needed:
-  - Add higher-priority allow rules.
-
-- Default NSG rules cannot be modified:
-  - `AllowVnetInBound`
-  - `AllowAzureLoadBalancerInBound`
-  - `DenyAllInBound`
-
-- You can override defaults using higher-priority rules.
+- Navigate to **Network Security Groups** → **Create**.
+- Create a new NSG.
+- Associate the NSG with the **Web** subnet:
+  - Resource → **Subnets** → **Associate**
+- Configure inbound security rules:
+  - Allow HTTPS (Port 443) from the Internet
+  - Deny all other inbound Internet traffic
+- To add the HTTPS rule:
+  - **Inbound Security Rules** → **Add**
+  - Service: **HTTPS**
+  - Destination Port: **443**
+- To deny other inbound traffic:
+  - Add a rule with Destination Port: `*`
+- Review default NSG rules:
+  - AllowVnetInBound
+  - AllowAzureLoadBalancerInBound
+  - DenyAllInBound
+- Note that custom rules with higher priority can override default behavior.
 
 ---
 
-## 3️⃣ 💾 Create and Configure a Storage Account
+### 3️⃣ 💾 Create and Configure a Storage Account
 
-- Navigate to:
-  - **Storage Accounts** > **Create**
-
-### 🔁 Replication
-
-Choose either:
-
-- **LRS** — Locally Redundant Storage
-- **GRS** — Geo-Redundant Storage
-
-### 🔐 Private Endpoint
-
-Ensure secure access from the database subnet.
-
-#### Configure
-
-- Go to:
-  - Advanced
-  - Permitted scope
-  - “From storage accounts that have a private endpoint…”
-
-- Disable:
-  - ❌ Public access
-
-- Add:
-  - ✅ Private Endpoint
-  - Select the `Database` subnet
-
-### 🔑 Encryption
-
-- Use:
-  - **Microsoft-managed keys**
-
----
-
-## 4️⃣ 📦 Deploy Using ARM Templates
-
-### 📥 Export Templates
-
-For both:
-
-- VNet
-- Storage Account
-
-Go to:
-
-- Automation > Export Template > Download
-
-### 📤 Import Templates
-
-Navigate to:
-
-- **Template Specs**
-  - Import template
+- Navigate to **Storage Accounts** → **Create**.
+- Configure the following settings:
+  - Replication:
+    - Locally Redundant Storage (LRS), or
+    - Geo-Redundant Storage (GRS)
+  - Encryption:
+    - Microsoft-managed keys
+- Configure secure network access:
+  - Navigate to **Advanced**
   - Select:
-    - `template.json`
-
-- Create template spec.
-
-### 🚀 Deploy Template
-
-- In Template Specs:
-  - Click the `⋮` (three dots)
-  - Select:
-    - **Deploy**
+    - **Permitted Scope** → Storage accounts with private endpoints
+  - Disable public access
+  - Create a **Private Endpoint**
+  - Associate the endpoint with the **Database** subnet
+- Review and create the Storage Account.
 
 ---
 
-## 5️⃣ 🧪 Test Access and Encryption
+### 4️⃣ ⚙️ Deploy Resources Using ARM Templates
 
-### 🔑 Generate a SAS Token
-
-Navigate to:
-
-- Storage Accounts
-- Your storage account
-- Security + Networking
-- Shared Access Signature
-
-### Configure
-
-- Select:
-  - ✅ All allowed resource types
-
-- Click:
-  - **Generate SAS**
+- Navigate to the deployed Virtual Network.
+- Select **Automation** → **Export Template**.
+- Download the template files.
+- Repeat for the Storage Account.
+- Navigate to **Template Specs**.
+- Select **Import Template**.
+- Upload the exported `template.json` file.
+- Create the Template Spec.
+- Select the three-dot menu (**...**) beside the template.
+- Choose **Deploy**.
+- Verify that the resources deploy successfully from the template.
 
 ---
 
-## 📂 Test Blob Service SAS URL
+### 5️⃣ 🔑 Test Access and Encryption
 
-### 🗃️ Use Azure Storage Explorer
+- Navigate to the Storage Account.
+- Select **Security + Networking** → **Shared Access Signature (SAS)**.
+- Configure:
+  - Allowed Resource Types: **All**
+- Generate the SAS token.
 
-- Download and install:
-  - Azure Storage Explorer
+#### Test Using Azure Storage Explorer
 
-- Go to:
-  - **Connect to Azure Resources**
-  - **Use a shared access signature (SAS) URI**
+- Install Azure Storage Explorer.
+- Select **Connect to Azure Resources**.
+- Choose **Use a Shared Access Signature (SAS) URI**.
+- Paste the generated connection string or SAS URL.
+- Create a Blob Container.
+- Upload and download files to verify access.
 
-- Paste:
-  - Connection String
+#### Test Using AzCopy
 
-### ✅ Test Upload/Download
-
-- Create a blob container
-- Upload/download files
-
----
-
-## ⚡ Use AzCopy
-
-### 📥 Install AzCopy
-
-- Download AzCopy
-
-### ▶️ Run Test Upload
+- Install AzCopy.
+- Upload a file using the following command:
 
 ```bash
-azcopy copy "file-to-upload.txt" "https://proj2saqwerty.blob.core.windows.net/container-name/file-to-upload.txt?[SAS]"
+azcopy copy "file-to-upload.txt" "https://yourstorageaccount.blob.core.windows.net/container-name/file-to-upload.txt?[SAS]"
 ```
 
-### 📝 Note
+- Replace `[SAS]` with the generated SAS token.
+- Verify that the file uploads successfully.
+- Confirm that encrypted storage and secure access are functioning correctly.
 
-Replace:
+---
 
-```text
-[SAS]
-```
+## 🎯 Learning Outcomes
 
-with your generated SAS token.
+By completing this project, you will be able to:
+
+- Create and configure Azure Virtual Networks
+- Design subnet architectures for workload isolation
+- Secure network traffic using Network Security Groups
+- Deploy and configure Azure Storage Accounts
+- Implement Private Endpoints for secure storage access
+- Enable encryption for data at rest
+- Generate and use Shared Access Signatures (SAS)
+- Automate deployments using ARM Templates
+- Validate secure storage connectivity and access controls
+
+---
+
+## ✅ Services Used
+
+- Azure Virtual Network (VNet)
+- Azure Subnets
+- Network Security Groups (NSGs)
+- Azure Storage Account
+- Azure Private Endpoint
+- Azure Resource Manager (ARM) Templates
+- Azure Storage Explorer
+- AzCopy
+
+---
+
+## 📚 Key Concepts
+
+| Feature | Purpose |
+|----------|----------|
+| Virtual Network (VNet) | Provides network isolation and communication between Azure resources |
+| Subnets | Segment workloads within a VNet |
+| Network Security Group (NSG) | Controls inbound and outbound network traffic |
+| Storage Account | Stores Azure data objects securely |
+| Private Endpoint | Enables private access to Azure services |
+| Encryption | Protects data at rest using managed keys |
+| Shared Access Signature (SAS) | Provides delegated, time-limited access to storage resources |
+| ARM Templates | Automate and standardize infrastructure deployments |
+
+This project provides hands-on experience with Azure networking, secure storage design, access control, encryption, and infrastructure-as-code deployment practices.
